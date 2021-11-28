@@ -64,75 +64,91 @@ class Wechat
 
     public function __construct(ContainerInterface $container, ConfigInterface $config)
     {
-        $this->payment = $this->getPayment($container, $config);
-        $this->miniProgram = $this->getMiniProgram($container, $config);
-        $this->openPlatform = $this->getOpenPlatform($container, $config);
-        $this->officialAccount = $this->getOfficialAccount($container, $config);
-        $this->basicService = $this->getBasicService($container, $config);
-        $this->work = $this->getWork($container, $config);
-        $this->openWork = $this->getOpenWork($container, $config);
-        $this->microMerchant = $this->getMicroMerchant($container, $config);
+        if ($cfg = $config->get('wechat.payment')) {
+            $this->payment = $this->getPayment($container, $cfg);
+        }
+        if ($cfg = $config->get('wechat.mini_program')) {
+            $this->miniProgram = $this->getMiniProgram($container, $cfg);
+        }
+        if ($cfg = $config->get('wechat.open_platform')) {
+            $this->openPlatform = $this->getOpenPlatform($container, $cfg);
+        }
+        if ($cfg = $config->get('wechat.official_account')) {
+            $this->officialAccount = $this->getOfficialAccount($container, $cfg);
+        }
+        if ($cfg = $config->get('wechat.basic_service')) {
+            $this->basicService = $this->getBasicService($container, $cfg);
+        }
+        if ($cfg = $config->get('wechat.work')) {
+            $this->work = $this->getWork($container, $cfg);
+        }
+        if ($cfg = $config->get('wechat.open_work')) {
+            $this->openWork = $this->getOpenWork($container, $cfg);
+        }
+        if ($cfg = $config->get('wechat.micro_merchant')) {
+            $this->microMerchant = $this->getMicroMerchant($container, $cfg);
+        }
     }
 
-    protected function getPayment(ContainerInterface $container, ConfigInterface $config)
+    protected function getPayment(ContainerInterface $container, array $config)
     {
-        $app = Factory::payment($config->get('wechat.payment'));
+        $app = Factory::payment($config);
         $this->replaceHandlerAndCache($container, $app);
 
         return $app;
     }
 
-    protected function getMiniProgram(ContainerInterface $container, ConfigInterface $config)
+    protected function getMiniProgram(ContainerInterface $container, array $config)
     {
-        $app = Factory::miniProgram($config->get('wechat.mini_program'));
+        $app = Factory::miniProgram($config);
         $this->replaceHandlerAndCache($container, $app);
 
         return $app;
     }
 
-    protected function getOpenPlatform(ContainerInterface $container, ConfigInterface $config)
+    protected function getOpenPlatform(ContainerInterface $container, array $config)
     {
-        $app = Factory::openPlatform($config->get('wechat.open_platform'));
+        $app = Factory::openPlatform($config);
         $this->replaceHandlerAndCache($container, $app);
 
         return $app;
     }
 
-    protected function getOfficialAccount(ContainerInterface $container, ConfigInterface $config)
+    protected function getOfficialAccount(ContainerInterface $container, array $config)
     {
-        $app = Factory::officialAccount($config->get('wechat.official_account'));
+        $app = Factory::officialAccount($config);
         $this->replaceHandlerAndCache($container, $app);
 
         return $app;
     }
 
-    protected function getBasicService(ContainerInterface $container, ConfigInterface $config)
+    protected function getBasicService(ContainerInterface $container, array $config)
     {
-        $app = Factory::basicService($config->get('wechat.basic_service'));
+        $app = Factory::basicService($config);
         $this->replaceHandlerAndCache($container, $app);
 
         return $app;
     }
 
-    protected function getWork(ContainerInterface $container, ConfigInterface $config)
+    protected function getWork(ContainerInterface $container, array $config)
     {
-        $app = Factory::work($config->get('wechat.work'));
+        $app = Factory::work($config);
         $this->replaceHandlerAndCache($container, $app);
 
         return $app;
     }
 
-    protected function getOpenWork(ContainerInterface $container, ConfigInterface $config)
+    protected function getOpenWork(ContainerInterface $container, array $config)
     {
-        $app = Factory::openWork($config->get('wechat.open_work'));
+        $app = Factory::openWork($config);
         $this->replaceHandlerAndCache($container, $app);
 
         return $app;
     }
 
-    protected function getMicroMerchant(ContainerInterface $container, ConfigInterface $config)
+    protected function getMicroMerchant(ContainerInterface $container, array $config)
     {
-        $app = Factory::microMerchant($config->get('wechat.micro_merchant'));
+        $app = Factory::microMerchant($config);
         $this->replaceHandlerAndCache($container, $app);
 
         return $app;
