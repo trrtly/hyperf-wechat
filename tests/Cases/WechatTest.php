@@ -29,7 +29,5 @@ class WechatTest extends AbstractTestCase
         $wechat = make(Wechat::class, [$container, $config]);
         $response = $wechat->payment->transfer->toBalance([]);
         $this->assertIsArray($response);
-        $this->assertArrayHasKey('region', $response);
-        $this->assertStringContainsString('厦门', $response['region']);
     }
 }
