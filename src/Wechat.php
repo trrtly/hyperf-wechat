@@ -19,6 +19,7 @@ use Hyperf\Contract\ConfigInterface;
 use Hyperf\Contract\ContainerInterface;
 use Hyperf\Guzzle\CoroutineHandler;
 use Hyperf\HttpServer\Contract\RequestInterface;
+use Hyperf\Utils\Context;
 use Psr\SimpleCache\CacheInterface;
 use Symfony\Component\HttpFoundation\HeaderBag;
 use Symfony\Component\HttpFoundation\Request;
@@ -105,7 +106,7 @@ class Wechat
         if ($id !== 'officialAccount') {
             throw new \RuntimeException(sprintf('property %s not exists in %s', $id, __CLASS__));
         }
-        return $this->getOfficialAccount();
+        return Context::getOrSet(\EasyWeChat\OfficialAccount\Application::class, $this->getOfficialAccount());
     }
 
     protected function getPayment(array $config)
@@ -132,7 +133,7 @@ class Wechat
         return $app;
     }
 
-    protected function getOfficialAccount()
+    public function getOfficialAccount()
     {
         $request = $this->container->get(RequestInterface::class);
         $get = $request->getQueryParams();
