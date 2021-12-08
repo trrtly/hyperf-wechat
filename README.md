@@ -1,6 +1,6 @@
 # hyperf easywechat
 
-针对 hyperf 的 [easywechat](https://github.com/w7corp/easywechat) 组件，在框架启动时初始化相关实例，一定程度上提升组件性能.
+针对 hyperf 的 [easywechat](https://github.com/w7corp/easywechat) 组件.
 
 ## 安装
 
@@ -14,18 +14,14 @@ composer require trrtly/wechat
 
 use Trrtly\Wechat\Wechat;
 use Hyperf\Di\Annotation\Inject;
+use Hyperf\Contract\ConfigInterface;
 
 class Example
 {
-    /**
-     * @Inject
-     * @var Wechat
-     */
-    protected $wechat;
-
-    public function transferToBalance()
+    public function transferToBalance(ConfigInterface $config)
     {
-        $response = $this->wechat->payment->transfer->toBalance([
+        $app = Wechat::payment($config->get('wechat.payment'));
+        $response = $app->transfer->toBalance([
             'partner_trade_no' => '1233455', // 商户订单号，需保持唯一性(只能是字母或者数字，不能包含有符号)
             'openid' => 'oxTWIuGaIt6gTKsQRLau2M0yL16E',
             'check_name' => 'FORCE_CHECK', // NO_CHECK：不校验真实姓名, FORCE_CHECK：强校验真实姓名

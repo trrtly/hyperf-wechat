@@ -15,179 +15,160 @@ use EasyWeChat\Factory;
 use EasyWeChat\Kernel\ServiceContainer;
 use GuzzleHttp\Client;
 use GuzzleHttp\HandlerStack;
-use Hyperf\Contract\ConfigInterface;
-use Hyperf\Contract\ContainerInterface;
 use Hyperf\Guzzle\CoroutineHandler;
 use Hyperf\HttpServer\Contract\RequestInterface;
+use Hyperf\Utils\ApplicationContext;
 use Hyperf\Utils\Context;
 use Psr\SimpleCache\CacheInterface;
 use Symfony\Component\HttpFoundation\HeaderBag;
 use Symfony\Component\HttpFoundation\Request;
 
-/**
- * @property \EasyWeChat\OfficialAccount\Application $officialAccount
- */
 class Wechat
 {
     /**
-     * @var \EasyWeChat\Payment\Application
+     * @param array $config
+     * @return \EasyWeChat\OfficialAccount\Application
      */
-    public $payment;
+    public static function officialAccount(array $config)
+    {
+        return Context::getOrSet(
+            'wechatOfficialAccount:' . md5(serialize($config)),
+            function () use ($config) {
+                $request = ApplicationContext::getContainer()->get(RequestInterface::class);
+                $get = $request->getQueryParams();
+                $post = $request->getParsedBody();
+                $cookie = $request->getCookieParams();
+                $uploadFiles = $request->getUploadedFiles() ?? [];
+                $server = $request->getServerParams();
+                $xml = $request->getBody()->getContents();
+                $files = [];
+                /** @var \Hyperf\HttpMessage\Upload\UploadedFile $v */
+                foreach ($uploadFiles as $k => $v) {
+                    $files[$k] = $v->toArray();
+                }
+                $req = new Request($get, $post, [], $cookie, $files, $server, $xml);
+                $req->headers = new HeaderBag($request->getHeaders());
+                $app = Factory::officialAccount($config);
+                self::replaceHandlerAndCache($app);
+                $app->rebind('request', $req);
+                return $app;
+            }
+        );
+    }
 
     /**
-     * @var \EasyWeChat\MiniProgram\Application
+     * @param array $config
+     * @return \EasyWeChat\Payment\Application
      */
-    public $miniProgram;
+    public static function payment(array $config)
+    {
+        return Context::getOrSet(
+            'wechatPayment:' . md5(serialize($config)),
+            function () use ($config) {
+                $app = Factory::payment($config);
+                self::replaceHandlerAndCache($app);
+                return $app;
+            }
+        );
+    }
 
     /**
-     * @var \EasyWeChat\OpenPlatform\Application
+     * @param array $config
+     * @return \EasyWeChat\MiniProgram\Application
      */
-    public $openPlatform;
+    public static function miniProgram(array $config)
+    {
+        return Context::getOrSet(
+            'wechatMiniProgram:' . md5(serialize($config)),
+            function () use ($config) {
+                $app = Factory::miniProgram($config);
+                self::replaceHandlerAndCache($app);
+                return $app;
+            }
+        );
+    }
 
     /**
-     * @var \EasyWeChat\BasicService\Application
+     * @param array $config
+     * @return \EasyWeChat\OpenPlatform\Application
      */
-    public $basicService;
+    public static function openPlatform(array $config)
+    {
+        return Context::getOrSet(
+            'wechatOpenPlatform:' . md5(serialize($config)),
+            function () use ($config) {
+                $app = Factory::openPlatform($config);
+                self::replaceHandlerAndCache($app);
+                return $app;
+            }
+        );
+    }
 
     /**
-     * @var \EasyWeChat\Work\Application
+     * @param array $config
+     * @return \EasyWeChat\BasicService\Application
      */
-    public $work;
+    public static function basicService(array $config)
+    {
+        return Context::getOrSet(
+            'wechatBasicService:' . md5(serialize($config)),
+            function () use ($config) {
+                $app = Factory::basicService($config);
+                self::replaceHandlerAndCache($app);
+                return $app;
+            }
+        );
+    }
 
     /**
-     * @var \EasyWeChat\OpenWork\Application
+     * @param array $config
+     * @return \EasyWeChat\Work\Application
      */
-    public $openWork;
+    public static function work(array $config)
+    {
+        return Context::getOrSet(
+            'wechatWork:' . md5(serialize($config)),
+            function () use ($config) {
+                $app = Factory::work($config);
+                self::replaceHandlerAndCache($app);
+                return $app;
+            }
+        );
+    }
 
     /**
-     * @var \EasyWeChat\MicroMerchant\Application
+     * @param array $config
+     * @return \EasyWeChat\OpenWork\Application
      */
-    public $microMerchant;
+    public static function openWork(array $config)
+    {
+        return Context::getOrSet(
+            'wechatOpenWork:' . md5(serialize($config)),
+            function () use ($config) {
+                $app = Factory::openWork($config);
+                self::replaceHandlerAndCache($app);
+                return $app;
+            }
+        );
+    }
 
     /**
-     * @var ContainerInterface
+     * @param array $config
+     * @return \EasyWeChat\MicroMerchant\Application
      */
-    protected $container;
-
-    /**
-     * @var ConfigInterface
-     */
-    protected $config;
-
-    public function __construct(ContainerInterface $container, ConfigInterface $config)
+    public static function microMerchant(array $config)
     {
-        $this->container = $container;
-        $this->config = $config;
-        if ($cfg = $config->get('wechat.payment')) {
-            $this->payment = $this->getPayment($cfg);
-        }
-        if ($cfg = $config->get('wechat.mini_program')) {
-            $this->miniProgram = $this->getMiniProgram($cfg);
-        }
-        if ($cfg = $config->get('wechat.open_platform')) {
-            $this->openPlatform = $this->getOpenPlatform($cfg);
-        }
-        if ($cfg = $config->get('wechat.basic_service')) {
-            $this->basicService = $this->getBasicService($cfg);
-        }
-        if ($cfg = $config->get('wechat.work')) {
-            $this->work = $this->getWork($cfg);
-        }
-        if ($cfg = $config->get('wechat.open_work')) {
-            $this->openWork = $this->getOpenWork($cfg);
-        }
-        if ($cfg = $config->get('wechat.micro_merchant')) {
-            $this->microMerchant = $this->getMicroMerchant($cfg);
-        }
+        return Context::getOrSet(
+            'wechatMicroMerchant:' . md5(serialize($config)),
+            function () use ($config) {
+                $app = Factory::microMerchant($config);
+                self::replaceHandlerAndCache($app);
+                return $app;
+            }
+        );
     }
 
-    public function __get($id)
-    {
-        if ($id !== 'officialAccount') {
-            throw new \RuntimeException(sprintf('property %s not exists in %s', $id, __CLASS__));
-        }
-        return Context::getOrSet(\EasyWeChat\OfficialAccount\Application::class, $this->getOfficialAccount());
-    }
-
-    protected function getPayment(array $config)
-    {
-        $app = Factory::payment($config);
-        $this->replaceHandlerAndCache($app);
-
-        return $app;
-    }
-
-    protected function getMiniProgram(array $config)
-    {
-        $app = Factory::miniProgram($config);
-        $this->replaceHandlerAndCache($app);
-
-        return $app;
-    }
-
-    protected function getOpenPlatform(array $config)
-    {
-        $app = Factory::openPlatform($config);
-        $this->replaceHandlerAndCache($app);
-
-        return $app;
-    }
-
-    public function getOfficialAccount()
-    {
-        $request = $this->container->get(RequestInterface::class);
-        $get = $request->getQueryParams();
-        $post = $request->getParsedBody();
-        $cookie = $request->getCookieParams();
-        $uploadFiles = $request->getUploadedFiles() ?? [];
-        $server = $request->getServerParams();
-        $xml = $request->getBody()->getContents();
-        $files = [];
-        /** @var \Hyperf\HttpMessage\Upload\UploadedFile $v */
-        foreach ($uploadFiles as $k => $v) {
-            $files[$k] = $v->toArray();
-        }
-        $req = new Request($get, $post, [], $cookie, $files, $server, $xml);
-        $req->headers = new HeaderBag($request->getHeaders());
-        $app = Factory::officialAccount($this->config->get('wechat.official_account'));
-        $this->replaceHandlerAndCache($app);
-        $app->rebind('request', $req);
-        return $app;
-    }
-
-    protected function getBasicService(array $config)
-    {
-        $app = Factory::basicService($config);
-        $this->replaceHandlerAndCache($app);
-
-        return $app;
-    }
-
-    protected function getWork(array $config)
-    {
-        $app = Factory::work($config);
-        $this->replaceHandlerAndCache($app);
-
-        return $app;
-    }
-
-    protected function getOpenWork(array $config)
-    {
-        $app = Factory::openWork($config);
-        $this->replaceHandlerAndCache($app);
-
-        return $app;
-    }
-
-    protected function getMicroMerchant(array $config)
-    {
-        $app = Factory::microMerchant($config);
-        $this->replaceHandlerAndCache($app);
-
-        return $app;
-    }
-
-    protected function replaceHandlerAndCache(ServiceContainer $app)
+    protected static function replaceHandlerAndCache(ServiceContainer $app)
     {
         $handler = new CoroutineHandler();
         $config = $app['config']->get('http', []);
@@ -203,6 +184,6 @@ class Wechat
             ]);
         }
         // 替换默认缓存
-        $app->rebind('cache', $this->container->get(CacheInterface::class));
+        $app->rebind('cache', ApplicationContext::getContainer()->get(CacheInterface::class));
     }
 }

@@ -23,7 +23,8 @@
         "hyperf/config": "^2.0",
         "hyperf/framework": "^2.0",
         "hyperf/guzzle": "^2.0",
-        "overtrue/wechat": "^5.7"
+        "overtrue/wechat": "^5.7",
+        "ext-json": "*"
     },
     "require-dev": {
         "friendsofphp/php-cs-fixer": "^3.0",
