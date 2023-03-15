@@ -19,7 +19,7 @@
         }
     },
     "require": {
-        "php": ">=7.3",
+        "php": ">=7.4",
         "hyperf/config": "3.0.*",
         "hyperf/framework": "3.0.*",
         "hyperf/guzzle": "3.0.*",
