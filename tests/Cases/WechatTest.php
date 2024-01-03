@@ -12,8 +12,10 @@ declare(strict_types=1);
 namespace HyperfTest\Cases;
 
 use Hyperf\Config\ConfigFactory;
-use Hyperf\Utils\ApplicationContext;
+use Hyperf\Context\ApplicationContext;
 use Trrtly\Wechat\Wechat;
+
+use function Hyperf\Support\make;
 
 /**
  * @internal
